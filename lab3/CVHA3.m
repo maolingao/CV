@@ -14,18 +14,12 @@
 %% Korrespondenzschätzung
 % Korrespondenzen = punkt_korrespondenzen(IGray1,IGray2,Merkmale1,Merkmale2,'do_plot',true);
 load('Korrespondenzen.mat')
-%% Berechne die Essentielle Matrix
-%
-load('K.mat');
-E = achtpunktalgorithmus(Korrespondenzen,K);
-keyboard
 %% Extraktion der Essentiellen Matrix aus robusten Korrespondenzen
 % Finde robuste Korrespondenzpunktpaare mit Hilfe des RANSAC-Algorithmus'
 %
 Korrespondenzen_robust = F_ransac(Korrespondenzen);
 %
 % Zeigen Sie die robusten Korrespondenzpunkte an
-
 
 %% Berechne die Essentielle Matrix
 %
