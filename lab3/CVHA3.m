@@ -14,11 +14,11 @@ Image2 = imread('szeneR.jpg');
 IGray2 = rgb_to_gray(Image2);
 
 %% Harris-Merkmale berechnen
-Merkmale1 = harris_detektor(IGray1,'k',0.03,'N',100,'tile_size',[200,200],'min_dist',23,'segment_length',25,'do_plot',false);
-Merkmale2 = harris_detektor(IGray2,'k',0.03,'N',100,'tile_size',[200,200],'min_dist',23,'segment_length',25,'do_plot',false);
+Merkmale1 = harris_detektor(IGray1,'k',0.05,'N',100,'min_dist',80,'segment_length',9,'do_plot',false);
+Merkmale2 = harris_detektor(IGray2,'k',0.05,'N',100,'min_dist',80,'segment_length',9,'do_plot',false);
 
 %% Korrespondenzschätzung
-Korrespondenzen = punkt_korrespondenzen(IGray1,IGray2,Merkmale1,Merkmale2,'min_corr',0.95,'window_length',25,'do_plot',false);
+Korrespondenzen = punkt_korrespondenzen(IGray1,IGray2,Merkmale1,Merkmale2,'do_plot',false);
 
 %% Extraktion der Essentiellen Matrix aus robusten Korrespondenzen
 % Finde robuste Korrespondenzpunktpaare mit Hilfe des RANSAC-Algorithmus'
@@ -29,6 +29,7 @@ size(Korrespondenzen_robust)
 % Zeigen Sie die robusten Korrespondenzpunkte an
 %
 showKP(IGray1,IGray2,Korrespondenzen_robust);
+keyboard
 %% Berechne die Essentielle Matrix
 %
 load('K.mat');

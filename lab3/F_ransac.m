@@ -2,8 +2,8 @@ function [Korrespondenzen_robust]=F_ransac(Korrespondenzen,varargin)
 %% inputparser
 P           =   inputParser;
 P.addRequired('Korrespondenzen');
-P.addOptional('epsilon',0.5);
-P.addOptional('p',0.99);
+P.addOptional('epsilon',0.1);
+P.addOptional('p',0.95);
 P.addOptional('tolerance',0.1);
 P.parse(Korrespondenzen,varargin{:});
 
@@ -32,39 +32,40 @@ x1(1:2,:)   =   KPs(1:2,:);
 x2(1:2,:)   =   KPs(3:4,:);
 
 % initial setting
-KP_inlier       =   [];     % register of the robust corespondence points
-numInlierMax    =   0;      % register for the largest set of consensus
-Err             =   0;      % error to be campared for every correspondece pair
+KP_inlier       =   [];         % register of the robust corespondence points
+numInlierMax    =   0;          % register for the largest set of consensus
+Err             =   0;          % error to be campared for every correspondece pair
 e3              =   [0 0 1]';
 e3Dach          =   DachVektor(e3);
 
 % random sample consensus
 for i = 1 : s
-    idx             =   randperm(numKP, k);                 % randomly chosen k points
-    F               =   achtpunktalgorithmus(KPs(:, idx));   % computer the foundamental matrix by 8pa
-    Sampson_Dis     =   Sampson_Distance(x1, x2, e3Dach, F);    % compute the sampson disntances
-    numinlier       =   length( Sampson_Dis( Sampson_Dis < tao)); % compare with the threshold tao
+    idx             =   randperm(numKP, k)';                        % randomly chosen k points
+    F               =   achtpunktalgorithmus(KPs(:, idx));          % computer the foundamental matrix by 8pa
+    Sampson_Dis     =   Sampson_Distance(x1, x2, e3Dach, F);        % compute the sampson disntances
+    idxInlier       =   unique([idx; find(Sampson_Dis < tao)]);     % index of inlier
+    numInlier       =   length(idxInlier);                          % compare with the threshold tao
     
-    if (numinlier > numInlierMax)   % the new consensus set is larger
+    if (numInlier > numInlierMax)   % the new consensus set is larger
                                     % => update the set of consensus
-        numInlierMax    =   numinlier;
-        KP_inlier       =   KPs(:, Sampson_Dis < tao);
-        Err             =   sum( Sampson_Dis ( Sampson_Dis < tao ) );
+        numInlierMax    =   numInlier;
+        KP_inlier       =   KPs(:, idxInlier);
+        Err             =   sum( Sampson_Dis ( idxInlier) );
         
-    elseif (numinlier == numInlierMax) % new number of inlier points equals 
+    elseif (numInlier == numInlierMax) % new number of inlier points equals 
                                         % => compare error
-        Err_current = sum( Sampson_Dis( Sampson_Dis < tao ) );
+        Err_current = sum( Sampson_Dis( idxInlier ) );
         
         if ( Err_current < Err);    % the error of the new consensus set is smaller
                                     % => update the set of consensus
-            KP_inlier   =   KPs(:,Sampson_Dis < tao);
+            KP_inlier   =   KPs(:, idxInlier);
             Err         =   Err_current;
         end
     end
                  
 end
 
-Korrespondenzen_robust  =   KP_inlier;     % robust KPs
+Korrespondenzen_robust  =   KP_inlier;                              % robust KPs
 
 end
 
