@@ -1,4 +1,5 @@
 function showKP(I1, I2, Korrespondenzen)
+% function to show korrspondence point in images I1 and I2
 
 figure('name', 'Punkt-Robust Korrespondenzen');
 imshow(uint8(I1))
