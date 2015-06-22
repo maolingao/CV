@@ -4,7 +4,7 @@ P           =   inputParser;
 P.addRequired('Korrespondenzen');
 P.addOptional('epsilon',0.1);
 P.addOptional('p',0.95);
-P.addOptional('tolerance',0.1);
+P.addOptional('tolerance',1e-2);
 P.parse(Korrespondenzen,varargin{:});
 
 KPs         =   P.Results.Korrespondenzen;

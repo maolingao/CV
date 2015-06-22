@@ -17,7 +17,7 @@ end
 
 %% build matrix A
 A_reg       =   kron(kp1,kp2);
-A           =   A_reg(:,1:numKp:end);
+A           =   A_reg(:, 1 : numKp+1 : end);
 A           =   A';
 
 %% SVD of A

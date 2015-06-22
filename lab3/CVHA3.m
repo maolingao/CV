@@ -24,12 +24,11 @@ Korrespondenzen = punkt_korrespondenzen(IGray1,IGray2,Merkmale1,Merkmale2,'do_pl
 % Finde robuste Korrespondenzpunktpaare mit Hilfe des RANSAC-Algorithmus'
 %
 Korrespondenzen_robust = F_ransac(Korrespondenzen);
-size(Korrespondenzen_robust)
+assert(size(Korrespondenzen_robust,2)>=8, 'Error : at least 8 robust KPs must be found!')
 %
 % Zeigen Sie die robusten Korrespondenzpunkte an
 %
 showKP(IGray1,IGray2,Korrespondenzen_robust);
-keyboard
 %% Berechne die Essentielle Matrix
 %
 load('K.mat');
