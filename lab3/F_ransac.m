@@ -1,76 +1,77 @@
 function [Korrespondenzen_robust]=F_ransac(Korrespondenzen,varargin)
 %% inputparser
-P = inputParser;
+P           =   inputParser;
 P.addRequired('Korrespondenzen');
 P.addOptional('epsilon',0.5);
 P.addOptional('p',0.99);
 P.addOptional('tolerance',0.1);
 P.parse(Korrespondenzen,varargin{:});
 
+KPs         =   P.Results.Korrespondenzen;
+epsilon     =   P.Results.epsilon;
+p           =   P.Results.p;
+tao         =   P.Results.tolerance;
 
-KPs = P.Results.Korrespondenzen;
-epsilon = P.Results.epsilon;
-p = P.Results.p;
-tao= P.Results.tolerance;
-%%
-
-Nkp = length(KPs);
-k = 8;
-if Nkp < k;
+%% main part
+numKP   =   length(KPs);
+k       =   8;
+if numKP < k;
     fprintf('Korrespondenzpaaren weniger als 8\n');
     Korrespondenzen_robust = 0;
     return
 end
 
-% Iterationszahl berechnen
-s = log(1-p) / log(1-(1-epsilon)^k);
-s = ceil(s);                            % ceiling s
+% number of iteration
+s       =   log(1-p) / log(1-(1-epsilon)^k);
+s       =   ceil(s);
 
-e3 = [0 0 1]';
-e3Dach = DachVektor(e3);
+% transform to the homogenous coordinates
+x1          =   ones(3,numKP);
+x2          =   ones(3,numKP);
+x1(1:2,:)   =   KPs(1:2,:);
+x2(1:2,:)   =   KPs(3:4,:);
 
-% transfer to homogenous coordinate
-x1      =   ones(3,Nkp);
-x2      =   ones(3,Nkp);
-x1(1:2,:) = KPs(1:2,:);
-x2(1:2,:) = KPs(3:4,:);
+% initial setting
+KP_inlier       =   [];     % register of the robust corespondence points
+numInlierMax    =   0;      % register for the largest set of consensus
+Err             =   0;      % error to be campared for every correspondece pair
+e3              =   [0 0 1]';
+e3Dach          =   DachVektor(e3);
 
-% init setting
-numInlierMax   =   0;
-KP_inlier =   [];   % index of the robust corespondence points
-Err     =   0;
+% random sample consensus
 for i = 1 : s
-    idx         =   randperm(Nkp, k);              % randomly chosen k points
-    F           =   achtpunktalgorithmus(KPs(:,idx)); % call 8-point-algorithm
-    Sampson_Dis =   Sampson_Distanz(x1,x2,e3Dach,F);    % compute sampson disntances
-    numinlier        =   length(Sampson_Dis(Sampson_Dis < tao)); % compare with threshold
+    idx             =   randperm(numKP, k);                 % randomly chosen k points
+    F               =   achtpunktalgorithmus(KPs(:, idx));   % computer the foundamental matrix by 8pa
+    Sampson_Dis     =   Sampson_Distance(x1, x2, e3Dach, F);    % compute the sampson disntances
+    numinlier       =   length( Sampson_Dis( Sampson_Dis < tao)); % compare with the threshold tao
     
-    if (numinlier > numInlierMax)   % new number of inlier points is more
-        numInlierMax   =   numinlier;
-        KP_inlier =   KPs(:,Sampson_Dis < tao);
-        Err     =   sum( Sampson_Dis( Sampson_Dis < tao) );
+    if (numinlier > numInlierMax)   % the new consensus set is larger
+                                    % => update the set of consensus
+        numInlierMax    =   numinlier;
+        KP_inlier       =   KPs(:, Sampson_Dis < tao);
+        Err             =   sum( Sampson_Dis ( Sampson_Dis < tao ) );
         
     elseif (numinlier == numInlierMax) % new number of inlier points equals 
                                         % => compare error
         Err_current = sum( Sampson_Dis( Sampson_Dis < tao ) );
         
-        if ( Err_current < Err); % new error is smaller
-            KP_inlier =   KPs(:,Sampson_Dis < tao);
-            Err     =   Err_current;
+        if ( Err_current < Err);    % the error of the new consensus set is smaller
+                                    % => update the set of consensus
+            KP_inlier   =   KPs(:,Sampson_Dis < tao);
+            Err         =   Err_current;
         end
     end
                  
 end
 
-Korrespondenzen_robust = KP_inlier;     % robust KPs
-
-
+Korrespondenzen_robust  =   KP_inlier;     % robust KPs
 
 end
 
+%% sub-functions
 function A = DachVektor(v)
-    % build skew matrix of vector v (Dach Operator)
-    A = zeros(3);
+    % build the skew matrix of a vector v (Dach Operator)
+    A      = zeros(3);
     A(1,2) = -v(3);
     A(1,3) = v(2);
     A(2,1) = v(3);
@@ -79,12 +80,12 @@ function A = DachVektor(v)
     A(3,2) = v(1);
 end
 
-function d = Sampson_Distanz(x1,x2,e3,F)
-    % sampson distance for every KP
-    num = diag(x2'* F * x1).^2;     
-    t1 = e3 * F * x1;
-    den1 = sum(t1.^2)';
-    t2 = x2' * F * e3;
-    den2 = sum(t2.^2,2);
-    d = num ./ (den1 + den2);
+function d = Sampson_Distance(x1,x2,e3,F)
+    % the sampson distance for every KP
+    num     =   diag( x2' * F * x1).^2;     
+    t1      =   e3 * F * x1;
+    den1    =   sum(t1.^2)';
+    t2      =   x2' * F * e3;
+    den2    =   sum(t2.^2,2);
+    d       =   num ./ (den1 + den2);
 end
