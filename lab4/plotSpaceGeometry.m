@@ -8,12 +8,12 @@ xlabel('x-Achse')
 ylabel('y-Achse')
 zlabel('z-Achse')
 
-xmin = min(PointInSpace1(1,:))-1;
-xmax = max(PointInSpace1(1,:))+1;
-ymin = min(PointInSpace1(2,:))-1;
-ymax = max(PointInSpace1(2,:))+1;
+xmin = min(PointInSpace1(1,:))-0.3;
+xmax = max(PointInSpace1(1,:))+0.3;
+ymin = min(PointInSpace1(2,:))-0.3;
+ymax = max(PointInSpace1(2,:))+0.3;
 zmin = 0;
-zmax = max(PointInSpace1(3,:))+1;
+zmax = max(PointInSpace1(3,:))+0.5;
 
 axis([xmin xmax ymin ymax zmin zmax]) 
 
